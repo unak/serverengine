@@ -2,11 +2,27 @@
 require 'thread'
 require 'yaml'
 
+def windows?
+  /mswin|mingw/ =~ RUBY_PLATFORM
+end
+
 def reset_test_state
   FileUtils.mkdir_p 'tmp'
   FileUtils.rm_f 'tmp/state.yml'
   FileUtils.touch 'tmp/state.yml'
   $state_file_mutex = Mutex.new
+  if windows?
+    open("tmp/daemon.rb", "w") do |f|
+      f.puts <<-end
+require "serverengine"
+require "rspec"
+$state_file_mutex = Mutex.new # TODO
+require "server_worker_context"
+include ServerEngine
+Daemon.run_server(TestServer, TestWorker)
+      end
+    end
+  end
 end
 
 def incr_test_state(key)
