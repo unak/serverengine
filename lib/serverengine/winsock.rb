@@ -81,15 +81,19 @@ module ServerEngine
     INVALID_SOCKET = -1
   end
 
-  module RbWinSock
+  module Kernel32
     extend Fiddle::Importer
 
     dlload "kernel32"
     extern "int GetModuleFileNameA(int, char *, int)"
     extern "int CloseHandle(int)"
+  end
+
+  module RbWinSock
+    extend Fiddle::Importer
 
     ruby_bin_path_buf = Fiddle::Pointer.malloc(1000)
-    GetModuleFileNameA(0, ruby_bin_path_buf, ruby_bin_path_buf.size)
+    Kernel32.GetModuleFileNameA(0, ruby_bin_path_buf, ruby_bin_path_buf.size)
 
     ruby_bin_path = ruby_bin_path_buf.to_s.gsub(/\\/, '/')
     ruby_dll_paths = File.dirname(ruby_bin_path) + '/*msvcr*ruby*.dll'
@@ -120,7 +124,7 @@ module ServerEngine
         return sock
       ensure
         unless wrapped
-          WinSock.CloseHandle(handle)
+          Kernel.CloseHandle(handle)
         end
       end
     end

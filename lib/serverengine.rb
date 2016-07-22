@@ -37,6 +37,7 @@ module ServerEngine
     :ProcessManager => 'serverengine/process_manager',
     :SocketManager => 'serverengine/socket_manager',
     :Worker => 'serverengine/worker',
+    :Kernel32 => 'serverengine/winsock',
     :VERSION => 'serverengine/version',
   }.each_pair {|k,v|
     autoload k, File.expand_path(v, File.dirname(__FILE__))
@@ -55,7 +56,7 @@ module ServerEngine
   def self.ruby_bin_path
     if ServerEngine.windows?
       ruby_path = "\0" * 256
-      GetModuleFileName.call(0, ruby_path, 256)
+      Kernel32.GetModuleFileNameA(0, ruby_path, 256)
       return ruby_path.rstrip.gsub(/\\/, '/')
     else
       return File.join(RbConfig::CONFIG["bindir"], RbConfig::CONFIG["RUBY_INSTALL_NAME"]) + RbConfig::CONFIG["EXEEXT"]
