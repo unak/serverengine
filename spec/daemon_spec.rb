@@ -3,7 +3,7 @@ describe ServerEngine::Daemon do
   include_context 'test server and worker'
 
   it 'run and graceful stop' do
-    dm = Daemon.new(TestServer, TestWorker, daemonize: true, pid_path: "tmp/pid", windows_daemon_cmdline: [ServerEngine.ruby_bin_path, '-I', File.dirname(__FILE__), 'tmp/daemon.rb'])
+    dm = Daemon.new(TestServer, TestWorker, daemonize: true, pid_path: "tmp/pid", windows_daemon_cmdline: windows_daemon_cmdline)
     dm.main
 
     pid = File.read('tmp/pid').to_i
@@ -24,7 +24,7 @@ describe ServerEngine::Daemon do
   end
 
   it 'signals' do
-    dm = Daemon.new(TestServer, TestWorker, daemonize: true, pid_path: "tmp/pid", windows_daemon_cmdline: [ServerEngine.ruby_bin_path, '-I', File.dirname(__FILE__), 'tmp/daemon.rb'])
+    dm = Daemon.new(TestServer, TestWorker, daemonize: true, pid_path: "tmp/pid", windows_daemon_cmdline: windows_daemon_cmdline)
     dm.main
 
     pid = File.read('tmp/pid').to_i

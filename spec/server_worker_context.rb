@@ -2,16 +2,12 @@
 require 'thread'
 require 'yaml'
 
-def windows?
-  /mswin|mingw/ =~ RUBY_PLATFORM
-end
-
 def reset_test_state
   FileUtils.mkdir_p 'tmp'
   FileUtils.rm_f 'tmp/state.yml'
   FileUtils.touch 'tmp/state.yml'
   $state_file_mutex = Mutex.new
-  if windows?
+  if ServerEngine.windows?
     open("tmp/daemon.rb", "w") do |f|
       f.puts <<-end
 require "serverengine"
@@ -22,6 +18,14 @@ include ServerEngine
 Daemon.run_server(TestServer, TestWorker)
       end
     end
+  end
+end
+
+def windows_daemon_cmdline
+  if ServerEngine.windows?
+    [ServerEngine.ruby_bin_path, '-I', File.dirname(__FILE__), 'tmp/daemon.rb']
+  else
+    nil
   end
 end
 
