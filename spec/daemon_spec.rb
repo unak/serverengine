@@ -11,16 +11,16 @@ describe ServerEngine::Daemon do
 
     test_state(:server_initialize).should == 1
 
-    if ServerEngine.windows?
-      Process.kill(:KILL, pid)
-    else
-      Process.kill(:TERM, pid)
-    end
-    wait_for_stop
+    begin
+      dm.stop(true)
+      wait_for_stop
 
-    test_state(:server_stop_graceful).should == 1
-    test_state(:worker_stop).should == 1
-    test_state(:server_after_run).should == 1
+      test_state(:server_stop_graceful).should == 1
+      test_state(:worker_stop).should == 1
+      test_state(:server_after_run).should == 1
+    ensure
+      dm.stop(false) rescue nil
+    end
   end
 
   it 'signals' do
@@ -30,25 +30,24 @@ describe ServerEngine::Daemon do
     pid = File.read('tmp/pid').to_i
     wait_for_fork
 
-    unless ServerEngine.windows?
-      Process.kill(:USR2, pid)
+    begin
+      dm.reload
       wait_for_stop
       test_state(:server_reload).should == 1
 
-      Process.kill(:USR1, pid)
+      dm.restart(true)
       wait_for_stop
       test_state(:server_restart_graceful).should == 1
 
-      Process.kill(:HUP, pid)
+      dm.restart(false)
       wait_for_stop
       test_state(:server_restart_immediate).should == 1
 
-      Process.kill(:QUIT, pid)
+      dm.stop(false)
       wait_for_stop
       test_state(:server_stop_immediate).should == 1
-    else
-      Process.kill(:KILL, pid)
-      wait_for_stop
+    ensure
+      dm.stop(true)
     end
   end
 end
