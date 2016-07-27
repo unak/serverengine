@@ -37,6 +37,7 @@ module ServerEngine
     :ProcessManager => 'serverengine/process_manager',
     :SocketManager => 'serverengine/socket_manager',
     :Worker => 'serverengine/worker',
+    :CommandSender => 'serverengine/command_sender',
     :Kernel32 => 'serverengine/winsock',
     :VERSION => 'serverengine/version',
   }.each_pair {|k,v|
