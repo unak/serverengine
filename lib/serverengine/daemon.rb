@@ -49,7 +49,13 @@ module ServerEngine
       @chumask = @config[:chumask]
 
       @pid = nil
-      extend ServerEngine::CommandSender::Signal
+      @command_pipe = @config.fetch(:command_pipe, nil)
+      @command_sender = @config.fetch(:command_sender, "signal")
+      if @command_sender == "pipe"
+        extend ServerEngine::CommandSender::Pipe
+      else
+        extend ServerEngine::CommandSender::Signal
+      end
     end
 
     # server is available when run() is called. It is a Supervisor instance if supervisor is set to true. Otherwise a Server instance.
@@ -142,14 +148,27 @@ module ServerEngine
       rpipe, wpipe = IO.pipe
       wpipe.sync = true
 
+      if @command_sender == "pipe"
+        inpipe, @command_pipe = IO.pipe
+        @command_pipe.sync = true
+        @command_pipe.binmode
+      end
+
       if ServerEngine.windows?
         windows_daemon_cmdline = config[:windows_daemon_cmdline]
-        @pid = Process.spawn(*Array(windows_daemon_cmdline))
+        config = {}
+        if @command_sender == "pipe"
+          config[:in] = inpipe
+        end
+        @pid = Process.spawn(*Array(windows_daemon_cmdline), config)
         wpipe.close
       else
         Process.fork do
           begin
             rpipe.close
+            if @command_sender == "pipe"
+              @command_pipe.close
+            end
 
             Process.setsid
             Process.fork do
@@ -180,6 +199,9 @@ module ServerEngine
         end
 
         wpipe.close
+        if @command_sender == "pipe"
+          inpipe.close
+        end
 
         @pid = rpipe.gets.to_i
       end
