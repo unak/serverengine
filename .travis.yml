@@ -9,6 +9,7 @@ rvm:
 branches:
   only:
     - master
+    - experimental-sandbox
 
 script: bundle exec rake spec
 
