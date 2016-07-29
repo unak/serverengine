@@ -217,8 +217,8 @@ module ServerEngine
 
       unless ServerEngine.windows?
         data = rpipe.read
-        rpipe.close
         if data != "\n"
+          rpipe.close
           return @daemonize_error_exit_code
         end
       end
