@@ -46,7 +46,7 @@ describe ServerEngine::Daemon do
         wait_for_stop
         test_state(:server_stop_immediate).should == 1
       ensure
-        dm.stop(true)
+        dm.stop(true) rescue nil
       end
     end
   end
@@ -94,7 +94,7 @@ describe ServerEngine::Daemon do
       wait_for_stop
       test_state(:server_stop_immediate).should == 1
     ensure
-      dm.stop(true)
+      dm.stop(true) rescue nil
     end
   end
 end
