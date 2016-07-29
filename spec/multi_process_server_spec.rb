@@ -1,8 +1,7 @@
 
-describe ServerEngine::MultiWorkerServer do
-  include_context 'test server and worker'
-
-  [MultiThreadServer, MultiProcessServer].each do |impl_class|
+[ServerEngine::MultiThreadServer, ServerEngine::MultiProcessServer].each do |impl_class|
+  describe impl_class do
+    include_context 'test server and worker'
 
     it 'scale up' do
       config = {:workers => 2}
