@@ -179,6 +179,9 @@ module ServerEngine
               File.umask(@chumask) if @chumask
 
               s = create_server(create_logger)
+              if @command_sender == "pipe"
+                s.instance_variable_set(:@command_pipe, inpipe)
+              end
 
               STDIN.reopen(File::NULL)
               STDOUT.reopen(File::NULL, "wb")
