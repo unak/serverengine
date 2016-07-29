@@ -82,6 +82,9 @@ describe ServerEngine::SignalThread do
       t.join
     }
 
+    # give chance to run the signal thread
+    sleep 0.1
+
     # result won't be 100 because of kernel limitation
     n.should > 0
   end
