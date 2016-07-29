@@ -1,5 +1,8 @@
 
 [ServerEngine::MultiThreadServer, ServerEngine::MultiProcessServer].each do |impl_class|
+  # MultiProcessServer uses fork(2) internally, then it doesn't support Windows.
+  next if ServerEngine.windows? && impl_class == ServerEngine::MultiProcessServer
+
   describe impl_class do
     include_context 'test server and worker'
 
