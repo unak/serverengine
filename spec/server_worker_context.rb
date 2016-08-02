@@ -19,12 +19,37 @@ command_pipe = STDIN.dup
 Daemon.run_server(TestServer, TestWorker, command_pipe: command_pipe)
       end
     end
+
+    open("tmp/supervisor.rb", "w") do |f|
+      f.puts <<-end
+require "serverengine"
+require "rspec"
+$state_file_mutex = Mutex.new # TODO
+require "server_worker_context"
+include ServerEngine
+command_pipe = STDIN.dup
+sv = Supervisor.new(TestServer, TestWorker, command_pipe: command_pipe)
+s = sv.create_server(nil)
+s.install_signal_handlers
+t = Thread.new{ s.main }
+s.after_start
+t.join
+      end
+    end
   end
 end
 
 def windows_daemon_cmdline
   if ServerEngine.windows?
     [ServerEngine.ruby_bin_path, '-I', File.dirname(__FILE__), 'tmp/daemon.rb']
+  else
+    nil
+  end
+end
+
+def windows_supervisor_cmdline
+  if ServerEngine.windows?
+    [ServerEngine.ruby_bin_path, '-I', File.dirname(__FILE__), 'tmp/supervisor.rb']
   else
     nil
   end
