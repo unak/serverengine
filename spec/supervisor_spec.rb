@@ -2,12 +2,12 @@
 describe ServerEngine::Supervisor do
   include_context 'test server and worker'
 
-  def start_supervisor(worker = TestWorker, config={})
+  def start_supervisor(worker = nil, config={})
     if ServerEngine.windows?
-      config[:windows_daemon_cmdline] = windows_supervisor_cmdline
+      config[:windows_daemon_cmdline] = windows_supervisor_cmdline(nil, worker, config)
       config[:command_sender] = "pipe"
     end
-    sv = Supervisor.new(TestServer, worker, config)
+    sv = Supervisor.new(TestServer, worker || TestWorker, config)
     t = Thread.new { sv.main }
 
     return sv, t
@@ -183,13 +183,6 @@ describe ServerEngine::Supervisor do
   it 'initialize error' do
     sv = Supervisor.new(InitializeErrorServer, TestWorker)
     lambda { sv.main }.should raise_error(StandardError)
-  end
-
-  module RunErrorWorker
-    def run
-      incr_test_state :worker_run
-      raise StandardError, "error test"
-    end
   end
 
   it 'auto restart in limited ratio' do
