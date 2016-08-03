@@ -99,7 +99,7 @@ module ServerEngine
 
     def _stop(stop_graceful)
       if @command_pipe
-        @command_pipe.write stop_graceful ? "GRACEFUL_STOP\n" : "IMMEDIATE_STOP\n"
+        @command_pipe.write stop_graceful ? "GRACEFUL_STOP\n" : "IMMEDIATE_STOP\n" rescue nil
         @command_pipe.close
         @command_pipe = nil
       else
@@ -256,6 +256,7 @@ module ServerEngine
         end
       else
         inpipe, @command_pipe = IO.pipe
+        @last_start_time = Time.now
         m = @pm.spawn(*Array(config[:windows_daemon_cmdline]), in: inpipe)
         inpipe.close
 
