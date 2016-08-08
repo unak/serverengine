@@ -17,48 +17,50 @@
 #
 module ServerEngine
   module CommandSender
+    # requires @pid
     module Signal
-      # requires @pid
-      def stop(graceful)
+      private
+      def _stop(graceful)
         Process.kill(!ServerEngine.windows? && graceful ? Daemon::Signals::GRACEFUL_STOP : Daemon::Signals::IMMEDIATE_STOP, @pid)
       end
 
-      def restart(graceful)
+      def _restart(graceful)
         Process.kill(graceful ? Daemon::Signals::GRACEFUL_RESTART : Daemon::Signals::IMMEDIATE_RESTART, @pid)
       end
 
-      def reload
+      def _reload
         Process.kill(Daemon::Signals::RELOAD, @pid)
       end
 
-      def detach
+      def _detach
         Process.kill(Daemon::Signals::DETACH, @pid)
       end
 
-      def dump
+      def _dump
         Process.kill(Daemon::Signals::DUMP, @pid)
       end
     end
 
+    # requires @command_pipe
     module Pipe
-      # requires @command_pipe
-      def stop(graceful)
+      private
+      def _stop(graceful)
         @command_pipe.write graceful ? "GRACEFUL_STOP\n" : "IMMEDIATE_STOP\n"
       end
 
-      def restart(graceful)
+      def _restart(graceful)
         @command_pipe.write graceful ? "GRACEFUL_RESTART\n" : "IMMEDIATE_RESTART\n"
       end
 
-      def reload
+      def _reload
         @command_pipe.write "RELOAD\n"
       end
 
-      def detach
+      def _detach
         @command_pipe.write "DETACH\n"
       end
 
-      def dump
+      def _dump
         @command_pipe.write "DUMP\n"
       end
     end
