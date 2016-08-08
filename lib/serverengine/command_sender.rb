@@ -17,27 +17,35 @@
 #
 module ServerEngine
   module CommandSender
-    # requires @pid
+    # requires send_signal method or @pid
     module Signal
       private
       def _stop(graceful)
-        Process.kill(!ServerEngine.windows? && graceful ? Daemon::Signals::GRACEFUL_STOP : Daemon::Signals::IMMEDIATE_STOP, @pid)
+        _send_signal(!ServerEngine.windows? && graceful ? Daemon::Signals::GRACEFUL_STOP : Daemon::Signals::IMMEDIATE_STOP)
       end
 
       def _restart(graceful)
-        Process.kill(graceful ? Daemon::Signals::GRACEFUL_RESTART : Daemon::Signals::IMMEDIATE_RESTART, @pid)
+        _send_signal(graceful ? Daemon::Signals::GRACEFUL_RESTART : Daemon::Signals::IMMEDIATE_RESTART)
       end
 
       def _reload
-        Process.kill(Daemon::Signals::RELOAD, @pid)
+        _send_signal(Daemon::Signals::RELOAD)
       end
 
       def _detach
-        Process.kill(Daemon::Signals::DETACH, @pid)
+        _send_signal(Daemon::Signals::DETACH)
       end
 
       def _dump
-        Process.kill(Daemon::Signals::DUMP, @pid)
+        _send_signal(Daemon::Signals::DUMP)
+      end
+
+      def _send_signal(sig)
+        if respond_to?(:send_signal)
+          send_signal(sig)
+        else
+          Process.kill(sig, @pid)
+        end
       end
     end
 
