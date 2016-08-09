@@ -41,7 +41,7 @@ module ServerEngine
       end
 
       def _send_signal(sig)
-        if respond_to?(:send_signal)
+        if respond_to?(:send_signal, true)
           send_signal(sig)
         else
           Process.kill(sig, @pid)
